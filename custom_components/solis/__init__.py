@@ -16,7 +16,6 @@ from .const import (
     CONF_PORTAL_DOMAIN,
     CONF_REFRESH_OK,
     CONF_SECRET,
-    DEFAULT_API_URL,
     DEFAULT_NAME,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
@@ -25,28 +24,30 @@ from .coordinator import SolisDataCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS = [Platform.SENSOR]
-LEGACY_API_URLS = {
-    "https://www.soliscloud.com:13333",
-    "https://www.soliscloud.com:13333/",
+OFFICIAL_API_URL = "https://www.soliscloud.com:13333"
+OBSOLETE_API_URLS = {
+    "https://v3.soliscloud.com:13333",
+    "https://v3.soliscloud.com:13333/",
 }
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up SolisCloud from a config entry."""
     data = dict(entry.data)
-    configured_url = str(data.get(CONF_PORTAL_DOMAIN, DEFAULT_API_URL)).rstrip("/")
+    configured_url = str(data.get(CONF_PORTAL_DOMAIN, OFFICIAL_API_URL)).rstrip("/")
 
-    # Solis moved the user API from www.soliscloud.com to v3.soliscloud.com.
-    # Old config entries from hultenvp/solis-sensor keep the old URL, so migrate
-    # it in-place instead of forcing users to delete/recreate the integration.
-    if configured_url in {url.rstrip("/") for url in LEGACY_API_URLS}:
+    # SolisCloud's current user-auth API documentation lists
+    # https://www.soliscloud.com:13333 as the base URL. Older beta builds of
+    # this integration incorrectly migrated users to v3.soliscloud.com, so
+    # migrate those entries back automatically.
+    if configured_url in {url.rstrip("/") for url in OBSOLETE_API_URLS}:
         _LOGGER.warning(
             "Migrating obsolete SolisCloud API endpoint %s to %s",
             configured_url,
-            DEFAULT_API_URL,
+            OFFICIAL_API_URL,
         )
-        configured_url = DEFAULT_API_URL
-        data[CONF_PORTAL_DOMAIN] = DEFAULT_API_URL
+        configured_url = OFFICIAL_API_URL
+        data[CONF_PORTAL_DOMAIN] = OFFICIAL_API_URL
         hass.config_entries.async_update_entry(entry, data=data)
 
     session = async_get_clientsession(hass)
