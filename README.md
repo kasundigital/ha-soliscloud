@@ -6,23 +6,17 @@ The project is designed as a backward-compatible continuation for existing `soli
 
 > **Beta:** test on a Home Assistant backup first. The monitoring API is the initial focus. Experimental inverter-control entities from the older project are not included in this first beta.
 
-## Why this project exists
+## Current API endpoint
 
-SolisCloud moved the user API endpoint from:
+The working SolisCloud user API endpoint used by this integration is:
 
 ```text
 https://www.soliscloud.com:13333
 ```
 
-to:
+Earlier beta builds of HA SolisCloud incorrectly migrated users to `https://v3.soliscloud.com:13333`. Version `1.0.0-beta.4` corrects that behavior and migrates affected entries back to the working `www.soliscloud.com:13333` endpoint.
 
-```text
-https://v3.soliscloud.com:13333
-```
-
-Older released integrations can therefore fail with a generic `Cannot login with provided URL and credentials` message even when the API Key ID, Secret and Station ID are valid.
-
-HA SolisCloud uses the current v3 endpoint by default and automatically migrates an existing config entry that still contains the old `www.soliscloud.com:13333` endpoint.
+The API signing implementation uses `Content-Type: application/json`, matching successful live SolisCloud API requests.
 
 ## Backward compatibility
 
@@ -95,8 +89,10 @@ You need:
 The default API URL is:
 
 ```text
-https://v3.soliscloud.com:13333
+https://www.soliscloud.com:13333
 ```
+
+The Station ID required by the API is the long numeric `stationId` returned by `/v1/api/inverterList`. It is not necessarily the short ID displayed in the SolisCloud mobile app.
 
 The integration validates the API before saving the config entry and distinguishes between authentication errors, connection errors, API errors and a valid account that returns no inverter for the supplied Station ID.
 
@@ -133,7 +129,7 @@ Then reproduce the problem and check **Settings → System → Logs**. Do not pu
 
 ## Project status / roadmap
 
-Planned work includes improved station discovery, richer diagnostics, tests against additional inverter models, multi-station UX, optional control support, translations and HACS-default submission.
+Planned work includes automatic station discovery, a simplified setup flow, a responsive Solis energy dashboard, richer diagnostics, tests against additional inverter models, multi-station UX, optional control support, translations and HACS-default submission.
 
 ## Credits
 
