@@ -46,43 +46,51 @@ class SolisConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            try:
-                api = SolisCloudApi(
-                    session=async_get_clientsession(self.hass),
-                    base_url=user_input[CONF_PORTAL_DOMAIN],
-                    key_id=user_input[CONF_KEY_ID],
-                    secret=user_input[CONF_SECRET],
-                    station_id=user_input[CONF_PLANT_ID],
-                )
-                await api.async_validate()
-            except SolisAuthError as err:
-                _LOGGER.warning("SolisCloud authentication failed: %s", err)
-                errors["base"] = "invalid_auth"
-            except SolisNoInvertersError as err:
-                _LOGGER.warning("SolisCloud returned no inverters: %s", err)
-                errors["base"] = "no_inverters"
-            except SolisConnectionError as err:
-                _LOGGER.warning("SolisCloud connection failed: %s", err)
-                errors["base"] = "cannot_connect"
-            except SolisApiError as err:
-                _LOGGER.warning("SolisCloud API error: %s", err)
-                errors["base"] = "api_error"
-            except Exception:  # noqa: BLE001 - config flow must surface a safe error.
-                _LOGGER.exception("Unexpected SolisCloud setup error")
-                errors["base"] = "unknown"
+            portal_domain = str(user_input[CONF_PORTAL_DOMAIN]).strip()
+            if not portal_domain.startswith(("https://", "http://")):
+                errors["base"] = "invalid_url"
             else:
-                station_id = str(user_input[CONF_PLANT_ID])
-                await self.async_set_unique_id(station_id)
-                self._abort_if_unique_id_configured()
-                return self.async_create_entry(
-                    title=f"SolisCloud {station_id}",
-                    data=user_input,
-                )
+                try:
+                    api = SolisCloudApi(
+                        session=async_get_clientsession(self.hass),
+                        base_url=portal_domain,
+                        key_id=user_input[CONF_KEY_ID],
+                        secret=user_input[CONF_SECRET],
+                        station_id=user_input[CONF_PLANT_ID],
+                    )
+                    await api.async_validate()
+                except SolisAuthError as err:
+                    _LOGGER.warning("SolisCloud authentication failed: %s", err)
+                    errors["base"] = "invalid_auth"
+                except SolisNoInvertersError as err:
+                    _LOGGER.warning("SolisCloud returned no inverters: %s", err)
+                    errors["base"] = "no_inverters"
+                except SolisConnectionError as err:
+                    _LOGGER.warning("SolisCloud connection failed: %s", err)
+                    errors["base"] = "cannot_connect"
+                except SolisApiError as err:
+                    _LOGGER.warning("SolisCloud API error: %s", err)
+                    errors["base"] = "api_error"
+                except Exception:  # noqa: BLE001 - config flow must surface a safe error.
+                    _LOGGER.exception("Unexpected SolisCloud setup error")
+                    errors["base"] = "unknown"
+                else:
+                    station_id = str(user_input[CONF_PLANT_ID])
+                    await self.async_set_unique_id(station_id)
+                    self._abort_if_unique_id_configured()
+                    data = dict(user_input)
+                    data[CONF_PORTAL_DOMAIN] = portal_domain
+                    return self.async_create_entry(
+                        title=f"SolisCloud {station_id}",
+                        data=data,
+                    )
 
         schema = vol.Schema(
             {
                 vol.Required(CONF_NAME, default=DEFAULT_NAME): cv.string,
-                vol.Required(CONF_PORTAL_DOMAIN, default=DEFAULT_API_URL): cv.url,
+                # Home Assistant 2026.9 / probatio cannot serialize cv.url in config-flow forms.
+                # Keep the form field serializable and validate the scheme above on submit.
+                vol.Required(CONF_PORTAL_DOMAIN, default=DEFAULT_API_URL): cv.string,
                 vol.Required(CONF_USERNAME): cv.string,
                 vol.Required(CONF_KEY_ID): cv.string,
                 vol.Required(CONF_SECRET): cv.string,
