@@ -1,0 +1,12 @@
+{
+  "domain": "solis",
+  "name": "SolisCloud",
+  "version": "1.0.0-beta.1",
+  "config_flow": true,
+  "documentation": "https://github.com/kasundigital/ha-soliscloud",
+  "issue_tracker": "https://github.com/kasundigital/ha-soliscloud/issues",
+  "codeowners": ["@kasundigital"],
+  "iot_class": "cloud_polling",
+  "integration_type": "hub",
+  "requirements": []
+}
