@@ -1,0 +1,14 @@
+HA SolisCloud
+Copyright 2026 Kasun Indika
+
+This project preserves compatibility with behaviour and naming used by the
+open-source hultenvp/solis-sensor Home Assistant integration:
+https://github.com/hultenvp/solis-sensor
+
+That upstream project is distributed under the Apache License, Version 2.0.
+This project includes independent implementation work and compatibility logic,
+while retaining attribution for upstream API-signing, sensor-naming and
+SolisCloud integration concepts that informed this implementation.
+
+Solis and SolisCloud are trademarks/products of their respective owners. This
+project is not affiliated with or endorsed by Ginlong Technologies/Solis.
