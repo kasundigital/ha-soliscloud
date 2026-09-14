@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import voluptuous as vol
@@ -33,6 +34,8 @@ from .const import (
     DOMAIN,
 )
 
+_LOGGER = logging.getLogger(__name__)
+
 
 class SolisConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle SolisCloud configuration."""
@@ -52,15 +55,20 @@ class SolisConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     station_id=user_input[CONF_PLANT_ID],
                 )
                 await api.async_validate()
-            except SolisAuthError:
+            except SolisAuthError as err:
+                _LOGGER.warning("SolisCloud authentication failed: %s", err)
                 errors["base"] = "invalid_auth"
-            except SolisNoInvertersError:
+            except SolisNoInvertersError as err:
+                _LOGGER.warning("SolisCloud returned no inverters: %s", err)
                 errors["base"] = "no_inverters"
-            except SolisConnectionError:
+            except SolisConnectionError as err:
+                _LOGGER.warning("SolisCloud connection failed: %s", err)
                 errors["base"] = "cannot_connect"
-            except SolisApiError:
+            except SolisApiError as err:
+                _LOGGER.warning("SolisCloud API error: %s", err)
                 errors["base"] = "api_error"
-            except Exception:  # Home Assistant shows a safe generic error; details go to logs.
+            except Exception:  # noqa: BLE001 - config flow must surface a safe error.
+                _LOGGER.exception("Unexpected SolisCloud setup error")
                 errors["base"] = "unknown"
             else:
                 station_id = str(user_input[CONF_PLANT_ID])
@@ -91,32 +99,32 @@ class SolisConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry: config_entries.ConfigEntry):
-        return SolisOptionsFlow(config_entry)
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> "SolisOptionsFlow":
+        return SolisOptionsFlow()
 
 
 class SolisOptionsFlow(config_entries.OptionsFlow):
     """Allow refresh interval changes without removing the integration."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        self._entry = config_entry
-
     async def async_step_init(self, user_input: dict[str, Any] | None = None):
+        entry = self.config_entry
         if user_input is not None:
-            data = dict(self._entry.data)
+            data = dict(entry.data)
             data.update(user_input)
-            self.hass.config_entries.async_update_entry(self._entry, data=data)
+            self.hass.config_entries.async_update_entry(entry, data=data)
             return self.async_create_entry(title="", data={})
 
         schema = vol.Schema(
             {
                 vol.Required(
                     CONF_REFRESH_OK,
-                    default=self._entry.data.get(CONF_REFRESH_OK, DEFAULT_SCAN_INTERVAL),
+                    default=entry.data.get(CONF_REFRESH_OK, DEFAULT_SCAN_INTERVAL),
                 ): vol.All(vol.Coerce(int), vol.Range(min=30, max=3600)),
                 vol.Required(
                     CONF_REFRESH_NOK,
-                    default=self._entry.data.get(CONF_REFRESH_NOK, DEFAULT_ERROR_INTERVAL),
+                    default=entry.data.get(CONF_REFRESH_NOK, DEFAULT_ERROR_INTERVAL),
                 ): vol.All(vol.Coerce(int), vol.Range(min=30, max=3600)),
             }
         )
