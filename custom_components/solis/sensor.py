@@ -29,9 +29,7 @@ async def async_setup_entry(
     for serial, values in (coordinator.data or {}).items():
         for description in ALL_SENSORS:
             if description.key in values and values.get(description.key) is not None:
-                entities.append(
-                    SolisSensor(coordinator, serial, integration_name, description)
-                )
+                entities.append(SolisSensor(coordinator, serial, integration_name, description))
     async_add_entities(entities)
 
 
@@ -53,8 +51,7 @@ class SolisSensor(CoordinatorEntity[SolisDataCoordinator], SensorEntity):
         self._description = description
         self._legacy_name = f"{integration_name} {description.name}"
 
-        # This exactly preserves the unique-id formula used by hultenvp/solis-sensor.
-        # Existing entity-registry entries therefore keep their entity IDs/history.
+        # Exactly matches the previous integration's unique-id formula.
         self._attr_unique_id = f"{serial}{self._legacy_name}".replace(" ", "_")
         self._attr_name = self._legacy_name
         self._attr_icon = description.icon
@@ -76,7 +73,7 @@ class SolisSensor(CoordinatorEntity[SolisDataCoordinator], SensorEntity):
 
     @property
     def available(self) -> bool:
-        """Keep entities available only when coordinator data is current."""
+        """Report availability from the coordinator."""
         values = (self.coordinator.data or {}).get(self._serial, {})
         return self.coordinator.last_update_success and self._description.key in values
 
@@ -86,7 +83,7 @@ class SolisSensor(CoordinatorEntity[SolisDataCoordinator], SensorEntity):
         return {
             "Inverter serial": self._serial,
             "API Name": "SolisCloud",
-            "Last updated": self.coordinator.last_update_success_time,
+            "Last updated": getattr(self.coordinator, "last_update_success_time", None),
         }
 
     @property
