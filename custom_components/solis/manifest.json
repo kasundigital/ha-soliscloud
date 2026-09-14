@@ -1,6 +1,6 @@
 {
   "domain": "solis",
-  "name": "SolisCloud",
+  "name": "SolisCloud by Kasun",
   "version": "1.0.0-beta.1",
   "config_flow": true,
   "documentation": "https://github.com/kasundigital/ha-soliscloud",
