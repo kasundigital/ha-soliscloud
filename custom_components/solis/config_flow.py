@@ -27,7 +27,6 @@ from .const import (
     CONF_REFRESH_OK,
     CONF_SECRET,
     CONF_USERNAME,
-    DEFAULT_API_URL,
     DEFAULT_ERROR_INTERVAL,
     DEFAULT_NAME,
     DEFAULT_SCAN_INTERVAL,
@@ -35,6 +34,7 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+OFFICIAL_API_URL = "https://www.soliscloud.com:13333"
 
 
 class SolisConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -46,7 +46,7 @@ class SolisConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            portal_domain = str(user_input[CONF_PORTAL_DOMAIN]).strip()
+            portal_domain = str(user_input[CONF_PORTAL_DOMAIN]).strip().rstrip("/")
             if not portal_domain.startswith(("https://", "http://")):
                 errors["base"] = "invalid_url"
             else:
@@ -88,9 +88,8 @@ class SolisConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         schema = vol.Schema(
             {
                 vol.Required(CONF_NAME, default=DEFAULT_NAME): cv.string,
-                # Home Assistant 2026.9 / probatio cannot serialize cv.url in config-flow forms.
-                # Keep the form field serializable and validate the scheme above on submit.
-                vol.Required(CONF_PORTAL_DOMAIN, default=DEFAULT_API_URL): cv.string,
+                # Keep this field serializable in Home Assistant config flows.
+                vol.Required(CONF_PORTAL_DOMAIN, default=OFFICIAL_API_URL): cv.string,
                 vol.Required(CONF_USERNAME): cv.string,
                 vol.Required(CONF_KEY_ID): cv.string,
                 vol.Required(CONF_SECRET): cv.string,
