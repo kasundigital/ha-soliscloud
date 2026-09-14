@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Connect to SolisCloud",
-        "description": "Use the API Key ID and API Secret from SolisCloud API Management. The default endpoint is the current v3 SolisCloud API endpoint.",
+        "description": "Use the API Key ID and API Secret from SolisCloud API Management. The default endpoint is https://www.soliscloud.com:13333.",
         "data": {
           "name": "Entity name prefix",
           "portal_domain": "SolisCloud API URL",
