@@ -1,5 +1,5 @@
 {
-  "title": "SolisCloud",
+  "title": "SolisCloud by Kasun",
   "config": {
     "step": {
       "user": {
@@ -18,6 +18,7 @@
       }
     },
     "error": {
+      "invalid_url": "Enter a valid SolisCloud API URL starting with https:// or http://.",
       "invalid_auth": "SolisCloud rejected the API credentials or signature. Check API access, Key ID and Secret.",
       "no_inverters": "No inverter was returned for this Station ID. Check the Station ID and API permissions.",
       "cannot_connect": "Cannot connect to the SolisCloud API. Check the API URL and your network connection.",
