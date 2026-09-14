@@ -1,0 +1,42 @@
+{
+  "title": "SolisCloud",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to SolisCloud",
+        "description": "Use the API Key ID and API Secret from SolisCloud API Management. The default endpoint is the current v3 SolisCloud API endpoint.",
+        "data": {
+          "name": "Entity name prefix",
+          "portal_domain": "SolisCloud API URL",
+          "portal_username": "Portal username or email",
+          "portal_key_id": "API Key ID",
+          "portal_secret": "API Secret",
+          "portal_plant_id": "Station ID",
+          "refresh_ok": "Refresh interval (seconds)",
+          "refresh_nok": "Retry interval after an error (seconds)"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "SolisCloud rejected the API credentials or signature. Check API access, Key ID and Secret.",
+      "no_inverters": "No inverter was returned for this Station ID. Check the Station ID and API permissions.",
+      "cannot_connect": "Cannot connect to the SolisCloud API. Check the API URL and your network connection.",
+      "api_error": "SolisCloud returned an API error. Check Home Assistant logs for the exact response.",
+      "unknown": "Unexpected error. Check Home Assistant logs for details."
+    },
+    "abort": {
+      "already_configured": "This SolisCloud Station ID is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SolisCloud options",
+        "data": {
+          "refresh_ok": "Refresh interval (seconds)",
+          "refresh_nok": "Retry interval after an error (seconds)"
+        }
+      }
+    }
+  }
+}
